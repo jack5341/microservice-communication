@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 type Person struct {
@@ -32,9 +34,31 @@ var DB = []Person{
 	},
 }
 
+var (
+	port string
+)
+
+func init() {
+	port = os.Getenv("PORT")
+
+	if port == "" {
+		port = "8081"
+	}
+}
+
 func main() {
+	flag.Parse()
+	fmt.Println(port)
+	port := fmt.Sprintf(":%s", port)
+
+	if port == "" {
+		port = "8081"
+	}
+
+	fmt.Println(port)
+
 	http.HandleFunc("/connections", Connections)
-	http.ListenAndServe(":8081", nil)
+	http.ListenAndServe(port, nil)
 }
 
 func Connections(w http.ResponseWriter, r *http.Request) {
