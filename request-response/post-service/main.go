@@ -14,6 +14,7 @@ type Person struct {
 	Post     string
 }
 
+// In-memory store 
 var DB = []Person{
 	{
 		Username: "anil",
@@ -34,31 +35,32 @@ var (
 )
 
 func init() {
+	// Getting port number from environment
 	port = os.Getenv("PORT")
 
 	if port == "" {
-		port = "8082"
+		// Default port is 8081
+		port = "8081"
 	}
 }
 
 func main() {
 	flag.Parse()
-	fmt.Println(port)
 	port := fmt.Sprintf(":%s", port)
-
-	if port == " " {
-		log.Panic("port is required arg")
-	}
-
+	
+	// Getting requests by endpoint "posts"
 	http.HandleFunc("/posts", Posts)
 	http.ListenAndServe(port, nil)
 }
 
 func Posts(w http.ResponseWriter, r *http.Request) {
+	// Parsing username by query
 	username := r.URL.Query().Get("username")
 
+	// Looking for is exist this username in our DB
 	for _, person := range DB {
 		if username == person.Username {
+			// If yes send his posts
 			out, _ := json.Marshal(person.Post)
 			fmt.Fprintf(w, string(out))
 		}
