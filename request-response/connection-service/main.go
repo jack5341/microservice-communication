@@ -13,6 +13,7 @@ type Person struct {
 	Follows  []string
 }
 
+// In-memory store
 var DB = []Person{
 	{
 		Username: "anil",
@@ -39,33 +40,32 @@ var (
 )
 
 func init() {
+	// Getting port number from environment
 	port = os.Getenv("PORT")
 
 	if port == "" {
+		// Default port is 8081
 		port = "8081"
 	}
 }
 
 func main() {
 	flag.Parse()
-	fmt.Println(port)
 	port := fmt.Sprintf(":%s", port)
-
-	if port == "" {
-		port = "8081"
-	}
-
-	fmt.Println(port)
-
+	
+	// Getting requests by endpoint "connections"
 	http.HandleFunc("/connections", Connections)
 	http.ListenAndServe(port, nil)
 }
 
 func Connections(w http.ResponseWriter, r *http.Request) {
+	// Parsing username by query
 	username := r.URL.Query().Get("username")
 
+	// Looking for is exist this username in our DB
 	for _, person := range DB {
 		if username == person.Username {
+			// If yes send his follows
 			out, _ := json.Marshal(person.Follows)
 			fmt.Fprintf(w, string(out))
 		}
