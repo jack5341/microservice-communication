@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 )
@@ -14,7 +13,7 @@ type Person struct {
 	Post     string
 }
 
-// In-memory store 
+// In-memory store
 var DB = []Person{
 	{
 		Username: "anil",
@@ -47,7 +46,7 @@ func init() {
 func main() {
 	flag.Parse()
 	port := fmt.Sprintf(":%s", port)
-	
+
 	// Getting requests by endpoint "posts"
 	http.HandleFunc("/posts", Posts)
 	http.ListenAndServe(port, nil)

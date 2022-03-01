@@ -52,7 +52,9 @@ func init() {
 func main() {
 	flag.Parse()
 	port := fmt.Sprintf(":%s", port)
-	
+
+	fmt.Println("Server is running on port", port)
+
 	// Getting requests by endpoint "connections"
 	http.HandleFunc("/connections", Connections)
 	http.ListenAndServe(port, nil)
