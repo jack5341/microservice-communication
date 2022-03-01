@@ -4,6 +4,8 @@ import os
 import requests
 
 PORT = os.getenv('PORT', 8080)
+CONNECTION_DOMAIN = os.getenv('CONNECTION_DOMAIN', 8081)
+POST_DOMAIN = os.getenv('POST_DOMAIN', 8082)
 app = Flask(__name__)
 
 
@@ -14,7 +16,7 @@ def apiGateway():
 
     # Fetching connections from connections service with username query
     r = requests.get(
-        url="http://localhost:8081/connections?username=" + username)
+        url="http://" + CONNECTION_DOMAIN + "/connections?username=" + username)
     data = r.json()
 
     # Creating In-memory store
@@ -22,7 +24,8 @@ def apiGateway():
 
     # Getting posts by usernames which usernames I take by connections service as []string
     for item in data:
-        r = requests.get(url="http://localhost:8082/posts?username=" + item)
+        r = requests.get(url="http://" + POST_DOMAIN +
+                         "/posts?username=" + item)
         data = r.json()
 
         # Appending to our In-memory store
