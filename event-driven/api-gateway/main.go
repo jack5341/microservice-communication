@@ -1,12 +1,17 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+
+	"github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl/scram"
 )
 
 type Person struct {
@@ -40,32 +45,65 @@ var DB = []Person{
 }
 
 var (
-	port string
+	port         string
+	brokerString string
+	credUser     string
+	credPass     string
 )
 
 func init() {
 	port = os.Getenv("PORT")
+	brokerString = os.Getenv("BROKER_STRING")
+	credUser = os.Getenv("CREDENTIAL_USERNAME")
+	credPass = os.Getenv("CREDENTIAL_PASSWORD")
+
+	if credUser == "" {
+		log.Fatal("CREDENTIAL_USERNAME is not set")
+	}
+
+	if credPass == "" {
+		log.Fatal("CREDENTIAL_PASSWORD is not set")
+	}
+
+	if brokerString == "" {
+		log.Fatal("BROKER_STRING is not set")
+	}
 
 	if port == "" {
-		port = "8080"
+		log.Fatal("PORT must be set")
 	}
 }
 
 func main() {
 	flag.Parse()
-	fmt.Println(port)
-	port := fmt.Sprintf(":%s", port)
 
-	if port == "" {
-		port = "8080"
+	mechanism, err := scram.Mechanism(scram.SHA256, credUser, credPass)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	fmt.Println(port)
+	dialer := &kafka.Dialer{
+		SASLMechanism: mechanism,
+		TLS:           &tls.Config{},
+	}
+
+	w := kafka.NewWriter(kafka.WriterConfig{
+		Brokers: []string{brokerString},
+		Topic:   "$TOPIC",
+		Dialer:  dialer,
+	})
+
+	w.Close()
 
 	http.HandleFunc("/timeline", Timeline)
 	http.HandleFunc("/connections", Connections)
 	http.HandleFunc("/post", Post)
-	http.ListenAndServe(port, nil)
+	fmt.Println("Listening on port", port)
+	err = http.ListenAndServe(port, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Timeline(w http.ResponseWriter, r *http.Request) {
