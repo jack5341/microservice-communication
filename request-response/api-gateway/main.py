@@ -4,8 +4,8 @@ import os
 import requests
 
 PORT = os.getenv('PORT', 8080)
-CONNECTION_DOMAIN = os.getenv('CONNECTION_DOMAIN', 8081)
-POST_DOMAIN = os.getenv('POST_DOMAIN', 8082)
+CONNECTION_DOMAIN = os.getenv('CONNECTION_DOMAIN', "localhost:8081")
+POST_DOMAIN = os.getenv('POST_DOMAIN', "localhost:8082")
 app = Flask(__name__)
 
 
