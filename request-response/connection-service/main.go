@@ -57,7 +57,12 @@ func main() {
 
 	// Getting requests by endpoint "connections"
 	http.HandleFunc("/connections", Connections)
+	http.HandleFunc("/healthz", HealthCheck)
 	http.ListenAndServe(port, nil)
+}
+
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("connection service is alive"))
 }
 
 func Connections(w http.ResponseWriter, r *http.Request) {

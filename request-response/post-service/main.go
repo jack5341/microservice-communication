@@ -50,13 +50,18 @@ func main() {
 
 	fmt.Println("Server is running on port", port)
 
-	// Getting requests by endpoint "connections"
+	// Getting requests by endpoint "/posts"
 	http.HandleFunc("/posts", Posts)
+	http.HandleFunc("/healthz", HealthCheck)
 	err := http.ListenAndServe(port, nil)
 
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("post service is alive"))
 }
 
 func Posts(w http.ResponseWriter, r *http.Request) {

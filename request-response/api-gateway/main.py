@@ -34,5 +34,8 @@ def apiGateway():
     # Returning In-memory store
     return str(favoritePosts)
 
+@app.route("/healthz")
+def HealthCheck():
+    return str("api gateway is alive")
 
 app.run(host='0.0.0.0', port=PORT)
