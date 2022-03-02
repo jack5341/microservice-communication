@@ -47,12 +47,14 @@ var DB = []Person{
 var (
 	port         string
 	brokerString string
+	topic        string
 	credUser     string
 	credPass     string
 )
 
 func init() {
 	port = os.Getenv("PORT")
+	topic = os.Getenv("TOPIC")
 	brokerString = os.Getenv("BROKER_STRING")
 	credUser = os.Getenv("CREDENTIAL_USERNAME")
 	credPass = os.Getenv("CREDENTIAL_PASSWORD")
@@ -67,6 +69,10 @@ func init() {
 
 	if brokerString == "" {
 		log.Fatal("BROKER_STRING is not set")
+	}
+
+	if topic == "" {
+		log.Fatal("TOPIC is not set")
 	}
 
 	if port == "" {
@@ -89,15 +95,68 @@ func main() {
 
 	w := kafka.NewWriter(kafka.WriterConfig{
 		Brokers: []string{brokerString},
-		Topic:   "$TOPIC",
+		Topic:   topic,
 		Dialer:  dialer,
 	})
 
-	w.Close()
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{brokerString},
+		Topic:   topic,
+		Dialer:  dialer,
+	})
 
-	http.HandleFunc("/timeline", Timeline)
-	http.HandleFunc("/connections", Connections)
-	http.HandleFunc("/post", Post)
+	/*
+		for {
+			// the `ReadMessage` method blocks until we receive the next event
+			msg, err := r.ReadMessage(context.Background())
+			if err != nil {
+				panic("could not read message " + err.Error())
+			}
+
+			switch string(msg.Value) {
+			case "TIMELINE":
+				Timeline("nedim")
+				break
+
+			case "CONNECTIONS":
+				Connections("nedim")
+				break
+
+			case "POST":
+				Timeline("nedim")
+				break
+
+			default:
+				break
+			}
+			// after receiving the message, log its value
+			fmt.Println(string(msg.Key), ":", string(msg.Value))
+		}
+	*/
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	/*
+		messages := kafka.Message{
+			Key:   []byte("Example-key"),
+			Value: []byte("Example content of kafka"),
+		}
+
+		err = w.WriteMessages(context.Background(), msg)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		http.HandleFunc("/connections", Connections)
+		http.HandleFunc("/post", Post)
+	*/
+
+	w.Close()
+	r.Close()
+
 	fmt.Println("Listening on port", port)
 	err = http.ListenAndServe(port, nil)
 
@@ -106,8 +165,7 @@ func main() {
 	}
 }
 
-func Timeline(w http.ResponseWriter, r *http.Request) {
-	username := r.URL.Query().Get("username")
+func Timeline(username string) string {
 
 	timeline := make(map[string]string)
 
@@ -120,7 +178,7 @@ func Timeline(w http.ResponseWriter, r *http.Request) {
 	}
 
 	out, _ := json.Marshal(timeline)
-	fmt.Fprintf(w, string(out))
+	return string(out)
 }
 
 func Connections(w http.ResponseWriter, r *http.Request) {

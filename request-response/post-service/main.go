@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
@@ -39,7 +40,7 @@ func init() {
 
 	if port == "" {
 		// Default port is 8081
-		port = "8081"
+		port = "8082"
 	}
 }
 
@@ -47,9 +48,15 @@ func main() {
 	flag.Parse()
 	port := fmt.Sprintf(":%s", port)
 
-	// Getting requests by endpoint "posts"
+	fmt.Println("Server is running on port", port)
+
+	// Getting requests by endpoint "connections"
 	http.HandleFunc("/posts", Posts)
-	http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func Posts(w http.ResponseWriter, r *http.Request) {

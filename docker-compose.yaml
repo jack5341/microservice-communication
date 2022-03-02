@@ -4,8 +4,8 @@ services:
     image: micro-comn/api-gateway
     environment:
       - PORT=8080
-      - CONNECTION_DOMAIN=localhost:8081
-      - POST_DOMAIN=localhost:8082
+      - CONNECTION_DOMAIN=connection-services:8081
+      - POST_DOMAIN=post-service:8082
     ports:
       - "8080:8080"
     build:
