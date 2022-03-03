@@ -30,9 +30,7 @@ var DB = []Person{
 	},
 }
 
-var (
-	port string
-)
+var port string
 
 func init() {
 	// Getting port number from environment
@@ -46,7 +44,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	port := fmt.Sprintf(":%s", port)
+	port = fmt.Sprintf(":%s", port)
 
 	fmt.Println("Server is running on port", port)
 
@@ -60,7 +58,8 @@ func main() {
 	}
 }
 
-func HealthCheck(w http.ResponseWriter, r *http.Request) {
+func HealthCheck(w http.
+	ResponseWriter, r *http.Request) {
 	w.Write([]byte("post service is alive"))
 }
 

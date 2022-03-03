@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 )
@@ -58,7 +59,11 @@ func main() {
 	// Getting requests by endpoint "connections"
 	http.HandleFunc("/connections", Connections)
 	http.HandleFunc("/healthz", HealthCheck)
-	http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {

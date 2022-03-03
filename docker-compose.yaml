@@ -9,7 +9,7 @@ services:
     ports:
       - "8080:8080"
     build:
-      context: ./api-gateway
+      context: ./request-response/api-gateway
     networks:
       - connection-network
     restart: always
