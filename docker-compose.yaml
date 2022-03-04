@@ -38,5 +38,16 @@ services:
       - connection-network
     restart: always
 
+  health-checker:
+    build:
+      context: ./request-response/healthchecker
+    environment:
+      - DELAY=3
+      - ADRESSES=connection-services:8081,post-service:8082
+    networks:
+      - connection-network
+    restart: always
+
+
 networks:
   connection-network:
