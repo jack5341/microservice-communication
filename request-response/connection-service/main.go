@@ -1,10 +1,11 @@
 package main
 
 import (
+	redis "connection-service/pkg"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 )
@@ -53,8 +54,9 @@ func init() {
 func main() {
 	flag.Parse()
 	port := fmt.Sprintf(":%s", port)
-
-	fmt.Println("Server is running on port", port)
+	client := redis.Client()
+	client.Set("language", "go", 0)
+	log.Info("server is running on port", port)
 
 	// Getting requests by endpoint "connections"
 	http.HandleFunc("/connections", Connections)
@@ -67,7 +69,10 @@ func main() {
 }
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("connection service is alive"))
+	_, err := w.Write([]byte("connection service is alive"))
+	if err != nil {
+		return
+	}
 }
 
 func Connections(w http.ResponseWriter, r *http.Request) {
