@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -9,9 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/segmentio/kafka-go"
-	"github.com/segmentio/kafka-go/sasl/scram"
 )
 
 type Person struct {
@@ -83,30 +79,25 @@ func init() {
 func main() {
 	flag.Parse()
 
-	mechanism, err := scram.Mechanism(scram.SHA256, credUser, credPass)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	dialer := &kafka.Dialer{
-		SASLMechanism: mechanism,
-		TLS:           &tls.Config{},
-	}
-
-	w := kafka.NewWriter(kafka.WriterConfig{
-		Brokers: []string{brokerString},
-		Topic:   topic,
-		Dialer:  dialer,
-	})
-
-	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{brokerString},
-		Topic:   topic,
-		Dialer:  dialer,
-	})
-
 	/*
-		for {
+		mechanism, err := scram.Mechanism(scram.SHA256, credUser, credPass)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		dialer := &kafka.Dialer{
+			SASLMechanism: mechanism,
+			TLS:           &tls.Config{},
+		}
+
+		r := kafka.NewReader(kafka.ReaderConfig{
+			Brokers: []string{brokerString},
+			Topic:   topic,
+			Dialer:  dialer,
+		})
+
+
+			for {
 			// the `ReadMessage` method blocks until we receive the next event
 			msg, err := r.ReadMessage(context.Background())
 			if err != nil {
@@ -132,13 +123,11 @@ func main() {
 			// after receiving the message, log its value
 			fmt.Println(string(msg.Key), ":", string(msg.Value))
 		}
-	*/
 
-	if err != nil {
-		log.Fatal(err)
-	}
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	/*
 		messages := kafka.Message{
 			Key:   []byte("Example-key"),
 			Value: []byte("Example content of kafka"),
@@ -152,13 +141,13 @@ func main() {
 
 		http.HandleFunc("/connections", Connections)
 		http.HandleFunc("/post", Post)
+
+		w.Close()
+		r.Close()
 	*/
 
-	w.Close()
-	r.Close()
-
 	fmt.Println("Listening on port", port)
-	err = http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, nil)
 
 	if err != nil {
 		log.Fatal(err)
