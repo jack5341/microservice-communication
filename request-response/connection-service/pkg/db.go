@@ -1,4 +1,4 @@
-package redis
+package db
 
 import (
 	"github.com/go-redis/redis"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func Client() *redis.Client {
+func Conn() *redis.Client {
 	url := os.Getenv("REDIS_URL")
 	pass := os.Getenv("REDIS_PASS")
 
