@@ -74,7 +74,7 @@ func main() {
 }
 
 func HealthCheck(w http.
-ResponseWriter, r *http.Request) {
+	ResponseWriter, r *http.Request) {
 	w.Write([]byte("post service is alive"))
 }
 
@@ -104,6 +104,8 @@ func Posts(w http.ResponseWriter, r *http.Request) {
 			// If yes send his posts
 			out, _ := json.Marshal(person.Post)
 			fmt.Fprintf(w, string(out))
+		} else {
+			fmt.Fprintf(w, "invalid username")
 		}
 	}
 }
