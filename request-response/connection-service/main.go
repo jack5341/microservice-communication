@@ -106,6 +106,8 @@ func Connections(w http.ResponseWriter, r *http.Request) {
 			// If yes send his follows
 			out, _ := json.Marshal(person.Follows)
 			fmt.Fprintf(w, string(out))
+		} else {
+			fmt.Fprintf(w, "invalid username")
 		}
 	}
 }
