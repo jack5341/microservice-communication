@@ -1,67 +1,18 @@
-version: "3.9"  # optional since v1.27.0
+version: "3.8"
+
 services:
-  api-gateway: 
-    image: micro-comn/api-gateway
+  database:
+    container_name: database
+    image: postgres:12.8
+    restart: always
     environment:
-      - PORT=8080
-      - CONNECTION_DOMAIN=connection-services:8081
-      - POST_DOMAIN=post-service:8082
+      - POSTGRES_USER=pg
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=crud
     ports:
-      - "8080:8080"
-    build:
-      context: ./request-response/api-gateway
-    networks:
-      - connection-network
-    restart: always
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
 
-  connection-services:
-    image: micro-comn/connection-service
-    build:
-      context: ./request-response/connection-service
-    environment:
-      - PORT=8081
-      - REDIS_URL=connections-db:6379
-    ports:
-      - "8081:8081"
-    networks:
-      - connection-network
-    restart: always
-
-  post-service:
-    image: micro-comn/post-service
-    build:
-      context: ./request-response/post-service
-    environment:
-      - PORT=8082
-      - REDIS_URL=post-db:6379
-    ports:
-      - "8082:8082"
-    networks:
-      - connection-network
-    restart: always
-
-  connections-db:
-    image: redis
-    networks:
-      - connection-network
-    restart: always
-
-  post-db:
-    image: redis
-    networks:
-      - connection-network
-    restart: always
-
-  health-checker:
-    build:
-      context: ./request-response/healthchecker
-    environment:
-      - DELAY=3
-      - ADRESSES=connection-services:8081,post-service:8082
-    networks:
-      - connection-network
-    restart: always
-
-
-networks:
-  connection-network:
+volumes:
+  db:
