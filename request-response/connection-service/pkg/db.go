@@ -1,30 +1,28 @@
 package db
 
 import (
-	"github.com/go-redis/redis"
+	"connection-service/pkg/models"
 	log "github.com/sirupsen/logrus"
-	"os"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func Conn() *redis.Client {
-	url := os.Getenv("REDIS_URL")
-	pass := os.Getenv("REDIS_PASS")
+func Conn() *gorm.DB {
+	dbURL := "postgres://pg:pass@localhost:5432/crud"
 
-	if url == "" {
-		log.Fatal("REDIS_URL is not set")
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
+
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     url,
-		Password: pass,
-	})
-
-	_, err := client.Ping().Result()
+	err = db.AutoMigrate(&models.Person{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Info("successfully connected to db")
-	return client
+	log.Info("connected to postgresql")
+
+	return db
 }

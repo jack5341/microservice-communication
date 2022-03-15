@@ -1,14 +1,18 @@
 package main
 
+import "C"
 import (
 	db "connection-service/pkg"
+	"connection-service/pkg/models"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/go-redis/redis"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Person struct {
@@ -16,8 +20,11 @@ type Person struct {
 	Follows  []string
 }
 
+var Persons []Person
+
 var (
 	port   string
+	DB     *gorm.DB
 	client *redis.Client
 )
 
@@ -29,14 +36,14 @@ func init() {
 		// Default port is 8081
 		port = "8081"
 	}
+
+	DB = db.Conn()
 }
 
 func main() {
 	flag.Parse()
 	port := fmt.Sprintf(":%s", port)
 	log.Info("server is running on port", port)
-
-	client = db.Conn()
 
 	obj, err := json.Marshal([]Person{
 		{
@@ -59,9 +66,25 @@ func main() {
 		},
 	})
 
-	err = client.Set("id1234", obj, 0).Err()
+	err = json.Unmarshal(obj, &Persons)
+
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
+	}
+
+	for _, v := range Persons {
+		isExist := DB.First(&models.Person{}, "username = ?", v.Username)
+
+		if isExist.Error == nil {
+			continue
+		}
+
+		if result := DB.Create(&models.Person{
+			Username: v.Username,
+			Follows:  strings.Join(v.Follows, ", "),
+		}); result.Error != nil {
+			log.Fatal(result.Error)
+		}
 	}
 
 	// Getting requests by endpoint "connections"
@@ -79,8 +102,11 @@ func main() {
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte("connection service is alive"))
+
+	defer r.Body.Close()
+
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 }
 
@@ -88,26 +114,29 @@ func Connections(w http.ResponseWriter, r *http.Request) {
 	// Parsing username by query
 	username := r.URL.Query().Get("username")
 
-	val, err := client.Get("id1234").Result()
-	if err != nil {
-		log.Fatal(err)
+	defer r.Body.Close()
+
+	var user Person
+
+	result := DB.Find(&user, Person{Username: username})
+
+	if result.Error == nil {
+		log.Warning("username couldn't find at connection-service db")
+		fmt.Fprint(w, "this username is invalid")
 	}
 
-	var personList []Person
-	err = json.Unmarshal([]byte(val), &personList)
+	fmt.Println(&user)
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Looking for is exist this username in our DB
-	for _, person := range personList {
-		if username == person.Username {
-			// If yes send his follows
-			out, _ := json.Marshal(person.Follows)
-			fmt.Fprintf(w, string(out))
-		} else {
-			fmt.Fprintf(w, "invalid username")
+	/*
+		// Looking for is exist this username in our DB
+		for _, person := range personList {
+			if username == person.Username {
+				// If yes send his follows
+				out, _ := json.Marshal(person.Follows)
+				fmt.Fprintf(w, string(out))
+			} else {
+				fmt.Fprintf(w, "invalid username")
+			}
 		}
-	}
+	*/
 }
