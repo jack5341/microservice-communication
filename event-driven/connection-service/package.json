@@ -1,0 +1,23 @@
+{
+    "name": "connection-service",
+    "version": "1.0.0",
+    "description": "event driven arch connection service",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "TOPIC=vve4vunz-event BROKER=rocket-01.srvs.cloudkafka.com:9094  KAFKA_PASS=9Evp21EdRj1Tj-C6bNzIW4s57emcdTQX KAFKA_USERNAME=vve4vunz EVENT_TITLE=API-GATEWAY nodemon index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Nedim Akar <nedim.akar53411@gmail.com>",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.17.3",
+        "install": "^0.13.0",
+        "kafkajs": "^1.16.0",
+        "nodemon": "^2.0.15",
+        "npm": "^8.5.5",
+        "pino": "^7.9.1",
+        "winston": "^3.6.0"
+    }
+}
